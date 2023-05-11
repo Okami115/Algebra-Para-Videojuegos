@@ -7,16 +7,16 @@ public class Tester : MonoBehaviour
 {
     void Start()
     {
-        List<Vector3> vectors = new List<Vector3>();
-        vectors.Add(new Vec3(10.0f, 0.0f, 0.0f));
-        vectors.Add(new Vec3(10.0f, 10.0f, 0.0f));
-        vectors.Add(new Vec3(20.0f, 10.0f, 0.0f));
-        vectors.Add(new Vec3(20.0f, 20.0f, 0.0f));
+        List<UnityEngine.Vector3> vectors = new List<UnityEngine.Vector3>();
+       //vectors.Add(new Vector3(10.0f, 0.0f, 0.0f));
+       //vectors.Add(new Vector3(10.0f, 10.0f, 0.0f));
+       //vectors.Add(new Vector3(20.0f, 10.0f, 0.0f));
+       //vectors.Add(new Vector3(20.0f, 20.0f, 0.0f));
         Vector3Debugger.AddVectorsSecuence(vectors, false, Color.red, "secuencia");
         Vector3Debugger.EnableEditorView("secuencia");
-        Vector3Debugger.AddVector(new Vector3(10, 10, 0), Color.blue, "elAzul");
+        Vector3Debugger.AddVector(new UnityEngine.Vector3(10, 10, 0), Color.blue, "elAzul");
         Vector3Debugger.EnableEditorView("elAzul");
-        Vector3Debugger.AddVector(Vector3.down * 7, Color.green, "elVerde");
+        Vector3Debugger.AddVector(UnityEngine.Vector3.down * 7, Color.green, "elVerde");
         Vector3Debugger.EnableEditorView("elVerde");
 
     }
