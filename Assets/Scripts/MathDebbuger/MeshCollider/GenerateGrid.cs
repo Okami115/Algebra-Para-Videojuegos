@@ -48,4 +48,9 @@ public class GenerateGrid : MonoBehaviour
             newPos.y = sphere.transform.position.y;
         }
     }
+
+    public List<GameObject> GetList()
+    {
+        return list;
+    }
 }

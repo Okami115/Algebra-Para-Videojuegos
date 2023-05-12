@@ -9,12 +9,13 @@ public class GeneratePlanes : MonoBehaviour
     [SerializeField] private Mesh mesh;
 
     [SerializeField] private List<Llano> listLlanos;
-
+    public List<Vec3> colisionPoints;
 
     void Start()
     {
         mesh = GetComponent<MeshFilter>().mesh;
         listLlanos = new List<Llano>();
+        colisionPoints = new List<Vec3>();
     }
 
     // Update is called once per frame
@@ -35,12 +36,30 @@ public class GeneratePlanes : MonoBehaviour
             
             Llano aux = new Llano(a ,b ,c);
 
+            aux.a = a;
+            aux.b = b;
+            aux.c = c;
+
             aux.normal *= -1;
             aux.Flip();
             
            listLlanos.Add(aux);
         }
+    }
 
+    public List<Llano> GetPlaneList()
+    {
+        return listLlanos;
+    }
+
+    public void SetColisionpoints(List<Vec3> colisionPoints)
+    {
+        this.colisionPoints = colisionPoints;
+    }
+
+    public List<Vec3> GetColisionPoints()
+    {
+        return colisionPoints;
     }
 
     private void OnDrawGizmos()

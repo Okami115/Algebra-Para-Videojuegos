@@ -13,6 +13,9 @@ public struct Llano
 
     private float m_Distance;
 
+    public Vec3 a;
+    public Vec3 b;
+    public Vec3 c;
 
     public CustomMath.Vec3 normal
     {
@@ -32,18 +35,27 @@ public struct Llano
     {
         m_Normal = CustomMath.Vec3.Normalize(inNormal);
         m_Distance = 0f - CustomMath.Vec3.Dot(m_Normal, inPoint);
+        this.a = Vec3.Zero;
+        this.b = Vec3.Zero;
+        this.c = Vec3.Zero;
     }
 
     public Llano(CustomMath.Vec3 inNormal, float d)
     {
         m_Normal = CustomMath.Vec3.Normalize(inNormal);
         m_Distance = d;
+        this.a = Vec3.Zero;
+        this.b = Vec3.Zero;
+        this.c = Vec3.Zero;
     }
 
     public Llano(CustomMath.Vec3 a, CustomMath.Vec3 b, CustomMath.Vec3 c)
     {
         m_Normal = CustomMath.Vec3.Normalize(CustomMath.Vec3.Cross(b - a, c - a));
         m_Distance = 0f - CustomMath.Vec3.Dot(m_Normal, a);
+        this.a = a;
+        this.b = b;
+        this.c = c;
     }
 
     public void SetNormalAndPosition(CustomMath.Vec3 inNormal, CustomMath.Vec3 inPoint)
@@ -56,6 +68,7 @@ public struct Llano
     {
         m_Normal = CustomMath.Vec3.Normalize(CustomMath.Vec3.Cross(b - a, c - a));
         m_Distance = -CustomMath.Vec3.Dot(m_Normal, a);
+
     }
 
     public void Flip()
