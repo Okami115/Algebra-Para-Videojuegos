@@ -53,7 +53,7 @@ public class CheckColision : MonoBehaviour
         CheckLlanoCoslision(llanoListB, colisionPointsB);
         b.GetComponent<GeneratePlanes>().SetColisionpoints(colisionPointsB);
 
-        CompareList(aScript, bScript);
+        CompareList();
     }
 
     private void CheckLlanoCoslision(List<Llano> llanos, List<Vec3> list)
@@ -71,6 +71,7 @@ public class CheckColision : MonoBehaviour
                     if (TrianglePointColision(point, llanos[j]))
                     {
                         count++;
+
                     }
                 }
             }
@@ -119,16 +120,13 @@ public class CheckColision : MonoBehaviour
         return Math.Abs(area1 + area2 + area3 - areaOrig) < Vec3.epsilon;
     }
 
-    private void CompareList(GeneratePlanes a, GeneratePlanes b)
+    private void CompareList()
     {
-        List<Vec3> listA = a.GetColisionPoints();
-        List<Vec3> listB = b.GetColisionPoints();
-
-        for (int i = 0; i < listA.Count; i++)
+        for (int i = 0; i < colisionPointsA.Count; i++)
         {
-            for (int j = 0; j < listB.Count; j++)
+            for (int j = 0; j < colisionPointsB.Count; j++)
             {
-                if (listA[i] == listB[j])
+                if (colisionPointsA[i] == colisionPointsB[j])
                 {
                     Debug.Log("COLISION!");
                 }
