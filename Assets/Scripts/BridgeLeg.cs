@@ -4,8 +4,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-Quaternion example;
-
 namespace BridgeLeg
 {
     struct VandalQuaternion
@@ -29,7 +27,7 @@ namespace BridgeLeg
             z = v.z;
             this.w = w;
         }
-        public VandalQuaternion(Quaternion q)
+        public VandalQuaternion(UnityEngine.Quaternion q)
         {
             this.x = q.x;
             this.y = q.y;
@@ -220,7 +218,7 @@ namespace BridgeLeg
         {
             float dot = Dot(a, b);
             float dotAbs = Mathf.Abs(dot);
-            return IsEqualUsingDot(Dot(a, b)) ? 0.0f : Mathf.Acos(Mathf.Min(dotAbs, 1.0F)) * 2.0f * Mathf.Rad2Deg;
+            return IsEqualUsingDot(dot) ? 0.0f : Mathf.Acos(Mathf.Min(dotAbs, 1.0F)) * 2.0f * Mathf.Rad2Deg;
         }
 
         public static VandalQuaternion AngleAxis(float angle, Vec3 axis)
