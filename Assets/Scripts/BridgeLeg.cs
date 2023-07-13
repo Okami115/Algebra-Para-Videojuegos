@@ -6,6 +6,12 @@ using UnityEngine;
 
 namespace BridgeLeg
 {
+    /// <summary>
+    /// Un Quaternion es la reprecentacion de una rotacion en el espacio y se compone por 3 numeros complejos y uno real
+    /// los numeros complejos estan compuestos por un numero complejo y uno real (Xi, Yj, Zk) y guarda la representacion del seno del objeto con respecto al espacio o a su padre.
+    /// 
+    /// Y W (La aparte real de un quaternion) es la distancia al punto de origen del objeto y al ser una distancia, siepre es positivo.
+    /// </summary>
     struct VandalQuaternion
     {
         public float x;
@@ -152,21 +158,22 @@ namespace BridgeLeg
             Vec3 angles;
 
             //(x-axis rotation)
-            float SinX = 2 * (w * x + y * z);
-            float CosX = 1 - 2 * (x * x + y * y);
-            angles.x = Mathf.Atan2(SinX, CosX);
+            float SinX = 2 * (w * x + y * z); // Y y Z se calculan para saber cuanto afecta esos valores sobre X
+            float CosX = 1 - 2 * (x * x + y * y);// 1 porque es el quaternion normalizado, el 2 porque se mezcla con la cantidad dimenciones
+                                                 // Y se 
+            angles.x = Mathf.Atan2(SinX, CosX);// resulta en la rotacion del eje en X
 
-            //(y-axis rotation)
+            //(y-axis rotation) //Se hace de esta forma para evitar un gimbal lock
             float SinY = Mathf.Sqrt(1 + 2 * (w * y - x * z));
             float CosY = Mathf.Sqrt(1 - 2 * (w * y - x * z));
-            angles.y = 2 * Mathf.Atan2(SinY, CosY) - MathF.PI / 2;
+            angles.y = 2 * Mathf.Atan2(SinY, CosY) - MathF.PI / 2; // Luego se realiza la operacion con pi para alinearlo con el resto de los ejes a 90 grados
 
-            //(z-axis rotation)
+            //(z-axis rotation) // Se calcula igual que X
             float SinZ = 2 * (w * z + x * y);
             float CosZ = 1 - 2 * (y * y + z * z);
             angles.z = Mathf.Atan2(SinZ, CosZ);
 
-            return angles;
+            return angles; //devuelve los angulos euler
         }
 
         public VandalQuaternion FormEulerToQuaternion(Vec3 euler)
@@ -179,18 +186,19 @@ namespace BridgeLeg
             VandalQuaternion qz = identity;
             VandalQuaternion r = identity;
 
-            sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.z * 0.5f);
-            cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.z * 0.5f);
+            sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.z * 0.5f);// Se calcula la parte imaginaria (Z)
+            cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.z * 0.5f);// Y se calcula la parte real W
             qz =  new VandalQuaternion(0, 0, sinAngle, cosAngle);
 
-            sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.x * 0.5f);
-            cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.x * 0.5f);
+            sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.x * 0.5f);// Se calcula la parte imaginaria (X)
+            cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.x * 0.5f);// Y se calcula la parte real W
             qx = new VandalQuaternion(sinAngle, 0, 0, cosAngle);
 
-            sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.y * 0.5f);
-            cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.y * 0.5f);
+            sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.y * 0.5f);// Se calcula la parte imaginaria (Y)
+            cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.y * 0.5f);// Y se calcula la parte real W
             qy = new VandalQuaternion(0, sinAngle, 0, cosAngle);
 
+            // Se multiplica de esta manera (Con la Y al principio)
             r = qy * qx * qz;
 
             return r;
@@ -214,18 +222,24 @@ namespace BridgeLeg
             return new VandalQuaternion(q.x / mag, q.y / mag, q.z / mag, q.w / mag);
         }
 
+        // Saca el angulo entre 2 quaterniones
         public static float Angle(VandalQuaternion a, VandalQuaternion b)
         {
             float dot = Dot(a, b);
+            // Se saca el valor absoluto porque los angulos siempre son positivos
             float dotAbs = Mathf.Abs(dot);
-            return IsEqualUsingDot(dot) ? 0.0f : Mathf.Acos(Mathf.Min(dotAbs, 1.0F)) * 2.0f * Mathf.Rad2Deg;
+            // Luego calcula el angulo entre los 2 quaterniones y se lo multiplica por 2 por la cantidad de dimenciones en las que trabajamos
+            return IsEqualUsingDot(dot) ? 0.0f : Mathf.Acos(Mathf.Min(dotAbs, 1.0f)) * 2.0f * Mathf.Rad2Deg;
         }
 
+        // 
         public static VandalQuaternion AngleAxis(float angle, Vec3 axis)
         {
+            // primero se normaliza el eje de rotacion sobre la cual se va a rotar el quaternion
             Vec3 axisVec = Vec3.Normalize(axis);
+            // Se calcula la parte imaginaria de rotacion en base al eje
             axisVec *= Mathf.Sin(angle * Mathf.Deg2Rad * 0.5f);
-            return new VandalQuaternion(axisVec.x, axisVec.y, axisVec.z, Mathf.Cos(angle * Mathf.Deg2Rad * 0.5f));
+            return new VandalQuaternion(axisVec.x, axisVec.y, axisVec.z, Mathf.Cos(angle * Mathf.Deg2Rad * 0.5f)); // Y luego con los angulos se calcula la parte real del quaternion
         }
 
         public static VandalQuaternion AxisAngle(Vec3 axis, float angle)
@@ -233,24 +247,30 @@ namespace BridgeLeg
             return AngleAxis(Mathf.Rad2Deg * angle, axis);
         }
 
+        // Crea un quaternion que representa la rotacion de un vector sobre otro
         public static VandalQuaternion FromToRotation(Vec3 fromDirection, Vec3 toDirection)
         {
+            //Primero seca el eje de rotacion sobre la cual se va a rotar un vector sobre otro
             Vec3 axis = Vec3.Cross(fromDirection, toDirection);
+            //Luego se calcula el angulo entre estos 2 vectores.
             float angle = Vec3.Angle(fromDirection, toDirection);
+            //Y se rota devuelve un quaternion que almacena la rotacion necesaria para que un vector quede sobre otro.
             return AngleAxis(angle, axis.normalized);
         }
 
         public static VandalQuaternion Inverse(VandalQuaternion rotation)
         {
+            //Simplemenete niega las partes imaginarias del quaternion para lograr invertir la direccion de la rotacion.
             return new VandalQuaternion(-rotation.x, -rotation.y, -rotation.z, rotation.w);
         }
 
+        // realiza una superposicion lineal de un quaternion sobre otro atravez del tiempo.
         public static VandalQuaternion LerpUnclamped(VandalQuaternion a, VandalQuaternion b, float t)
         {
             VandalQuaternion result = identity;
 
             float timeLeft = 1f - t;
-
+           
             if (Dot(a, b) >= 0f)
             {
                 result.x = (timeLeft * a.x) + (t * b.x);
@@ -276,16 +296,20 @@ namespace BridgeLeg
             return LerpUnclamped(a, b, t);
         }
 
+        //Esta funcion orienta un objeto hacie el forward del mundo.
         private static VandalQuaternion LookRotation(Vec3 forward, Vec3 up)
         {
+            //Aca mantiene la relacion entre los ejes
             forward = Vec3.Normalize(forward);
             Vec3 right = Vec3.Normalize(Vec3.Cross(up, forward));
             up = Vec3.Cross(forward, right);
 
+            //Inicializa una matriz 3x3 con la rotacion de los 3 ejes.
             float m00 = right.x; float m01 = right.y; float m02 = right.z;
             float m10 = up.x; float m11 = up.y; float m12 = up.z;
             float m20 = forward.x; float m21 = forward.y; float m22 = forward.z;
 
+            // define la diagonal
             float diagonals = m00 + m11 + m22;
             var q = new VandalQuaternion();
             if (diagonals > 0f)
@@ -329,8 +353,10 @@ namespace BridgeLeg
             return q;
         }
 
+        // Realiza una interpolacion circular entre 2 quaterniones a lo largo del tiempo
         public static VandalQuaternion SlerpUnclamped(VandalQuaternion a, VandalQuaternion b, float t)
         {
+            // chequea que los valores sea valido y que se puedatrabajar con ellos
             if (a.LengthSquared == 0.0f)
             {
                 if (b.LengthSquared == 0.0f)
@@ -344,8 +370,8 @@ namespace BridgeLeg
                 return a;
             }
 
+            // Luego se chequea que los quaternoiones no sean similares.
             float dot = Dot(a, b);
-
             if (dot >= 1.0f || dot <= -1.0f)
             {
                 return a;
@@ -361,6 +387,7 @@ namespace BridgeLeg
             float blendB;
             if (dot < 0.99f)
             {
+                //Luego se calcula el angulo entre los quaterniones
                 float halfAngle = Mathf.Acos(dot);
                 float sinHalfAngle = Mathf.Sin(halfAngle);
                 float oneOverSinHalfAngle = 1.0f / sinHalfAngle;
@@ -463,6 +490,7 @@ namespace BridgeLeg
 
         public static VandalQuaternion operator *(VandalQuaternion lhs, VandalQuaternion rhs)
         {
+            //Se aplica distributiba para conseguir la multiplicacion de 2 quaterniones siguiendo la formula de hamilton
             return new VandalQuaternion(
                 lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
                 lhs.w * rhs.y + lhs.y * rhs.w + lhs.z * rhs.x - lhs.x * rhs.z,
@@ -472,7 +500,9 @@ namespace BridgeLeg
 
         public static Vec3 operator *(VandalQuaternion rotation, Vec3 point)
         {
+            // se crea este quaternion sin valor en W que es la representacion de un vector dentro del quaternion 
             VandalQuaternion p = new VandalQuaternion(point.x, point.y, point.z, 0);
+            //Luego se mutiplican esto quaterniones
             VandalQuaternion p2 = (rotation * p) * Inverse(rotation);
             Vec3 res = new Vec3(p2.x, p2.y, p2.z);
             return res;

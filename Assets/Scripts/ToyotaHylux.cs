@@ -1,10 +1,6 @@
 using BridgeLeg;
 using CustomMath;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Security.Principal;
 using UnityEngine;
 
 
@@ -12,6 +8,8 @@ namespace ToyotaHylux
 {
     struct ToyotaHylux
     {
+        // Veriables definida para una matriz 4x4, 16 variable en total
+        // Y es lo mismo que 4 Vectores 4
         public float m00;
         public float m10;
         public float m20;
@@ -29,7 +27,8 @@ namespace ToyotaHylux
         public float m23;
         public float m33;
 
-        public ToyotaHylux(UnityEngine.Vector4 col0, UnityEngine.Vector4 col1, UnityEngine.Vector4 col2, UnityEngine.Vector4 col3)
+        // Constructor que recibe 4 vectores 4 para definir la matriz
+        public ToyotaHylux(UnityEngine.Vector4 M0, UnityEngine.Vector4 M1, UnityEngine.Vector4 M2, UnityEngine.Vector4 M3)
         {
             m00 = col0.x;
             m01 = col1.x;
@@ -187,6 +186,7 @@ namespace ToyotaHylux
         }
         public static ToyotaHylux identity
         {
+            // devuelve una matriz en Zero, menos la diagonal, la cual seria la escala del objeto.
             get
             {
                 ToyotaHylux m = zero;
