@@ -423,7 +423,7 @@ namespace ToyotaHylux
         }
 
         // Guarda la poscicion dentro de la matriz en la comlumna mas a la derecha de la misma.
-     public static ToyotaHylux Translate(Vec3 v)
+        public static ToyotaHylux Translate(Vec3 v)
         {
             ToyotaHylux m;
             m.m00 = 1f;
@@ -515,6 +515,11 @@ namespace ToyotaHylux
             ret.w = (float)((double)a.m30 * (double)v.x + (double)a.m31 * (double)v.y + (double)a.m32 * (double)v.z + (double)a.m33 * (double)v.w);
             return ret;
         }
+        
+        // Porque multiplicarias 2 matrices TRS? 
+        // Porque de esta forma podemos lograr que un (a) sea dependiente de la otra (b)
+        // Esto da a lugar a que un objeto rote porque mas que su rotacion sea 0
+        // Ya que la rotacion del padre(b) estaria afectando al hijo(a)
         public static ToyotaHylux operator *(ToyotaHylux a, ToyotaHylux b)
         {
             ToyotaHylux ret = zero;
