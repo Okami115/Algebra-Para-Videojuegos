@@ -465,6 +465,7 @@ namespace BridgeLeg
             this = LookRotation(view, Vec3.Up);
         }
 
+        // extrae el eje de rotacion del quaternion
         public void ToAxisAngle(out Vec3 axis, out float angle)
         {
             angle = 2.0f * Mathf.Acos(w);

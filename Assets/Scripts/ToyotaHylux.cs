@@ -210,40 +210,6 @@ namespace ToyotaHylux
             }
         }
 
-        public static ToyotaHylux Rotate(VandalQuaternion q)
-        {
-            double num1 = q.x * 2f;
-            double num2 = q.y * 2f;
-            double num3 = q.z * 2f;
-            double num4 = q.x * num1;
-            double num5 = q.y * num2;
-            double num6 = q.z * num3;
-            double num7 = q.x * num2;
-            double num8 = q.x * num3;
-            double num9 = q.y * num3;
-            double num10 = q.w * num1;
-            double num11 = q.w * num2;
-            double num12 = q.w * num3;
-            ToyotaHylux m;
-            m.m00 = (float)(1.0 - num5 + num6);
-            m.m10 = (float)(num7 + num12);
-            m.m20 = (float)(num8 - num11);
-            m.m30 = 0.0f;
-            m.m01 = (float)(num7 - num12);
-            m.m11 = (float)(1.0 - num4 + num6);
-            m.m21 = (float)(num9 + num10);
-            m.m31 = 0.0f;
-            m.m02 = (float)(num8 + num11);
-            m.m12 = (float)(num9 - num10);
-            m.m22 = (float)(1.0 - num4 + num5);
-            m.m32 = 0.0f;
-            m.m03 = 0.0f;
-            m.m13 = 0.0f;
-            m.m23 = 0.0f;
-            m.m33 = 1f;
-            return m;
-        }
-
         public static ToyotaHylux Transpose(ToyotaHylux m)
         {
             return new ToyotaHylux()
@@ -263,6 +229,7 @@ namespace ToyotaHylux
             };
         }
 
+        // invierte una matriz 4x4 sobre su diagonal y eso solo se puede hace si su determinate es valida
         public static ToyotaHylux Inverse(ToyotaHylux m)
         {
             float detA = Determinant(m);
@@ -349,18 +316,21 @@ namespace ToyotaHylux
             this[index, 2] = row.z;
             this[index, 3] = row.w;
         }
+
+        // Obtiene la rotacion guardada dentro de una matriz 4x4
         private VandalQuaternion GetRotation()
         {
             ToyotaHylux m = this;
             VandalQuaternion q = new VandalQuaternion();
 
-            q.w = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2;
-            q.x = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2;
-            q.y = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2;
-            q.z = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2;
-            q.x *= Mathf.Sign(q.x * (m[2, 1] - m[1, 2]));
-            q.y *= Mathf.Sign(q.y * (m[0, 2] - m[2, 0]));
-            q.z *= Mathf.Sign(q.z * (m[1, 0] - m[0, 1]));
+            // vuelve a componen el quaternion que anteriormente fue desmantelado para ser almacenado
+            q.w = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2; // Se calcula W que es la parte real del quaternion
+            q.x = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2; // Se calcula el componente real de X
+            q.y = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2; // Se calcula el componente real de Y
+            q.z = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2; // Se calcula el componente real de Z
+            q.x *= Mathf.Sign(q.x * (m[2, 1] - m[1, 2])); // Se lo multiplica por el componente complejo(i) para formal el valor complejo de X
+            q.y *= Mathf.Sign(q.y * (m[0, 2] - m[2, 0])); // Se lo multiplica por el componente complejo(j) para formal el valor complejo de Y
+            q.z *= Mathf.Sign(q.z * (m[1, 0] - m[0, 1])); // Se lo multiplica por el componente complejo(k) para formal el valor complejo de Z
 
             return q;
         }
@@ -368,8 +338,13 @@ namespace ToyotaHylux
         {
             return new Vec3(m03, m13, m23);
         }
+
+        // Saca el valor de la determinante y define si es reversible o no la matriz
         public static float Determinant(ToyotaHylux m)
         {
+            // es una operacion matematica la cual calcula la cantidad de informacion que se pierde con la inversion de la matriz
+            // Si es igual o mayor a Cero, significa que la perdida de datos es nula, sin embargo, si da algun numero negativo
+            // significaria que la matriz no puede ser reversible ya que se estarian perdiendo datos
             return
                 m[0, 3] * m[1, 2] * m[2, 1] * m[3, 0] - m[0, 2] * m[1, 3] * m[2, 1] * m[3, 0] -
                 m[0, 3] * m[1, 1] * m[2, 2] * m[3, 0] + m[0, 1] * m[1, 3] * m[2, 2] * m[3, 0] +
@@ -384,6 +359,8 @@ namespace ToyotaHylux
                 m[0, 2] * m[1, 0] * m[2, 1] * m[3, 3] - m[0, 0] * m[1, 2] * m[2, 1] * m[3, 3] -
                 m[0, 1] * m[1, 0] * m[2, 2] * m[3, 3] + m[0, 0] * m[1, 1] * m[2, 2] * m[3, 3];
         }
+
+        // Almacena la escala de un objeto dentro de la diagonal de una matriz
         public static ToyotaHylux Scale(Vec3 v)
         {
             ToyotaHylux m;
@@ -405,7 +382,48 @@ namespace ToyotaHylux
             m.m33 = 1f;
             return m;
         }
-        public static ToyotaHylux Translate(Vec3 v)
+
+        // Alamacena la rotacion del objeto dentro de la matriz
+        public static ToyotaHylux Rotate(VandalQuaternion q)
+        {
+            double num1 = q.x * 2f;
+            double num2 = q.y * 2f; // se multiplica por 2 a los componentes iamginarios del quaternion por la cantidad de diemnciones en la que se trabaja
+            double num3 = q.z * 2f;
+
+            // Se descompone el quaternion para guardar los valores dentro de la matriz
+            double num4 = q.x * num1;
+            double num5 = q.y * num2;
+            double num6 = q.z * num3;
+            double num7 = q.x * num2;
+            double num8 = q.x * num3;
+            double num9 = q.y * num3;
+            double num10 = q.w * num1;
+            double num11 = q.w * num2;
+            double num12 = q.w * num3;
+            ToyotaHylux m;
+
+            // El 1- es porque las posciones de correspondientes pertenece a la diagonal, que a su vez pertenecen a la escala y son inicializadas en 1.
+            m.m00 = (float)(1.0 - num5 + num6);//Almacena el coseno de la parte real de Y y Z
+            m.m10 = (float)(num7 + num12);// Alamcena el Seno Positivo de la parte compleja de Z
+            m.m20 = (float)(num8 - num11);// Almacena el Seno negativo de la parte compleja de Y
+            m.m30 = 0.0f;
+            m.m01 = (float)(num7 - num12);// Alamacena el seno negativo de la parte compleja de Z
+            m.m11 = (float)(1.0 - num4 + num6);// Almacena el coseno de la parte real de Z y X 
+            m.m21 = (float)(num9 + num10);// Alamacena el Seno negativa de la parte compleja de X
+            m.m31 = 0.0f;
+            m.m02 = (float)(num8 + num11);// Alamacena el Seno postiva de la parte compleja de Y
+            m.m12 = (float)(num9 - num10);// Alamacena el Seno negativa de la parte compleja de X
+            m.m22 = (float)(1.0 - num4 + num5);// Almacena el coseno de la parte real de Y y X 
+            m.m32 = 0.0f;
+            m.m03 = 0.0f;
+            m.m13 = 0.0f;
+            m.m23 = 0.0f;
+            m.m33 = 1f;
+            return m;
+        }
+
+        // Guarda la poscicion dentro de la matriz en la comlumna mas a la derecha de la misma.
+     public static ToyotaHylux Translate(Vec3 v)
         {
             ToyotaHylux m;
             m.m00 = 1f;
@@ -427,6 +445,7 @@ namespace ToyotaHylux
             return m;
         }
 
+        //Una matriz TRS es una matriz 4x4 que contiene los valores de posicion, rotacion y escala de un objeto.
         public static ToyotaHylux TRS(Vec3 pos, VandalQuaternion q, Vec3 s)
         { 
             return (Translate(pos) * Rotate(q) * Scale(s));
@@ -436,15 +455,18 @@ namespace ToyotaHylux
         {
             this = TRS(pos, q, s);
         }
+        
+        // Esta funcion chequea que la matriz sea una matriz TRS valida 
         public bool ValidTRS()
         {
+            // cheque que la diagonal o la escala no sea Cero
             if (lossyScale == Vec3.Zero)
                 return false;
             else if (m00 == double.NaN && m10 == double.NaN && m20 == double.NaN && m30 == double.NaN &&
-                     m01 == double.NaN && m11 == double.NaN && m21 == double.NaN && m31 == double.NaN &&
+                     m01 == double.NaN && m11 == double.NaN && m21 == double.NaN && m31 == double.NaN && // Cheque que sus componentesd sean numeros
                      m02 == double.NaN && m12 == double.NaN && m22 == double.NaN && m32 == double.NaN &&
                      m03 == double.NaN && m13 == double.NaN && m23 == double.NaN && m33 == double.NaN)
-                return false;
+                return false; // Chequea que las rotaciones estan dentro de los parametros para que luego se puedan leer
             else if (GetRotation().x > 1 && GetRotation().x < -1 && GetRotation().y > 1 && GetRotation().y < -1 && GetRotation().z > 1 && GetRotation().z < -1 && GetRotation().w > 1 && GetRotation().w < -1)
                 return false;
             else
