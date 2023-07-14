@@ -140,6 +140,7 @@ namespace BridgeLeg
 
         }
 
+        // Noramliza angulos entre 0 y 360 grados
         private static float NormalizeAngle(float angle)
         {
             while (angle > 360)
@@ -148,22 +149,29 @@ namespace BridgeLeg
                 angle += 360;
             return angle;
         }
+        
+        // Calcula el producto escalar entre 2 quaterniones
         public static float Dot(VandalQuaternion a, VandalQuaternion b)
         {
             return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
         }
 
+        // atraves de la trigonometria se calcula los grados euler de un quaternion
         public Vec3 FromQuaternionToEuler(VandalQuaternion rotation)
         {
             Vec3 angles;
 
+            // Basicament lo que intentamos hacer es calcular la hipotenusa de un triangulo en 2D
+            // para luego usarlo como cateto para clacula, junto con la profundidad, la hipotenusa del tringulo completo en 3D
+            // y ya con el triangulo 3D formado podemos calcular el angulo de rotacion en euler.
+
             //(x-axis rotation)
             float SinX = 2 * (w * x + y * z); // Y y Z se calculan para saber cuanto afecta esos valores sobre X
-            float CosX = 1 - 2 * (x * x + y * y);// 1 porque es el quaternion normalizado, el 2 porque se mezcla con la cantidad dimenciones
-                                                 // Y se 
+            float CosX = 1 - 2 * (x * x + y * y);// 1- porque es el quaternion normalizado, el 2 porque se mezcla con la cantidad dimenciones
             angles.x = Mathf.Atan2(SinX, CosX);// resulta en la rotacion del eje en X
 
-            //(y-axis rotation) //Se hace de esta forma para evitar un gimbal lock
+            //(y-axis rotation) //Se hace de esta forma para evitar un gimbal lock, ya que si X y Z se perdieran se pueden recuperar bajo la regla de
+            // que los ejes estan a 90 grados entre si.
             float SinY = Mathf.Sqrt(1 + 2 * (w * y - x * z));
             float CosY = Mathf.Sqrt(1 - 2 * (w * y - x * z));
             angles.y = 2 * Mathf.Atan2(SinY, CosY) - MathF.PI / 2; // Luego se realiza la operacion con pi para alinearlo con el resto de los ejes a 90 grados
@@ -171,11 +179,12 @@ namespace BridgeLeg
             //(z-axis rotation) // Se calcula igual que X
             float SinZ = 2 * (w * z + x * y);
             float CosZ = 1 - 2 * (y * y + z * z);
-            angles.z = Mathf.Atan2(SinZ, CosZ);
+            angles.z = Mathf.Atan2(SinZ, CosZ);// resulta en la rotacion del eje en Z
 
             return angles; //devuelve los angulos euler
         }
 
+        // compone un quaternion a partir de los angulos euler
         public VandalQuaternion FormEulerToQuaternion(Vec3 euler)
         {
             float sinAngle = 0.0f;
@@ -204,6 +213,7 @@ namespace BridgeLeg
             return r;
         }
 
+        // Noramliza los angulos de los quaterniones
         private static Vec3 NormalizeAngles(Vec3 angles)
         {
             angles.x = NormalizeAngle(angles.x);
@@ -212,6 +222,7 @@ namespace BridgeLeg
             return angles;
         }
 
+        // Normaliza un quaternion, es decir que su longitud va a ser 1, pero mantiene su direccion
         public static VandalQuaternion Normalize(VandalQuaternion q)
         {
             float mag = Mathf.Sqrt(Dot(q, q));
@@ -232,7 +243,7 @@ namespace BridgeLeg
             return IsEqualUsingDot(dot) ? 0.0f : Mathf.Acos(Mathf.Min(dotAbs, 1.0f)) * 2.0f * Mathf.Rad2Deg;
         }
 
-        // 
+        // Rota un quaternion sobre un eje en especifio y una cantidad de grados especificos
         public static VandalQuaternion AngleAxis(float angle, Vec3 axis)
         {
             // primero se normaliza el eje de rotacion sobre la cual se va a rotar el quaternion
@@ -250,7 +261,7 @@ namespace BridgeLeg
         // Crea un quaternion que representa la rotacion de un vector sobre otro
         public static VandalQuaternion FromToRotation(Vec3 fromDirection, Vec3 toDirection)
         {
-            //Primero seca el eje de rotacion sobre la cual se va a rotar un vector sobre otro
+            //Primero saca el eje de rotacion sobre la cual se va a rotar un vector sobre otro
             Vec3 axis = Vec3.Cross(fromDirection, toDirection);
             //Luego se calcula el angulo entre estos 2 vectores.
             float angle = Vec3.Angle(fromDirection, toDirection);
@@ -312,6 +323,8 @@ namespace BridgeLeg
             // define la diagonal
             float diagonals = m00 + m11 + m22;
             var q = new VandalQuaternion();
+
+            // Eleji que eje de rotacion uso para rota y evitar el gimbal lock
             if (diagonals > 0f)
             {
                 float num = Mathf.Sqrt(diagonals + 1f);
@@ -383,8 +396,8 @@ namespace BridgeLeg
                 dot = -dot;
             }
 
-            float blendA;
-            float blendB;
+            float blendA; // Representa la influencia sobre la rotacion a aplicar sobre XYZ.
+            float blendB; // Representa la influencia sobre la rotacion a aplicar sobre XYZ.
             if (dot < 0.99f)
             {
                 //Luego se calcula el angulo entre los quaterniones
@@ -414,10 +427,16 @@ namespace BridgeLeg
 
             return SlerpUnclamped(a, b, t);
         }
+
+        // Esta funcion rota un quaternion una cierta cantidad de grados en intervalos
         public static VandalQuaternion RotateTowards(VandalQuaternion from, VandalQuaternion to, float maxDegreesDelta)
         {
+            //Primero calcula el angulo entre los 2 quaterniones, si el angulo es 0, significa que los 2 son identicos
             float angle = Angle(from, to);
             if (angle == 0.0f) return to;
+            
+            // Luego se realiza una interpolacion circular entre el quaternion "from" y el quaternion "to"
+            // Y se hace en intervalos de los angulos que se hayan pasado como parametros hasta llegar a "to"
             return SlerpUnclamped(from, to, Mathf.Min(1.0f, maxDegreesDelta / angle));
         }
 
@@ -499,6 +518,7 @@ namespace BridgeLeg
                 lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z);
         }
 
+        // Rota un punto con un cuaternion 
         public static Vec3 operator *(VandalQuaternion rotation, Vec3 point)
         {
             // se crea este quaternion sin valor en W que es la representacion de un vector dentro del quaternion 

@@ -30,22 +30,22 @@ namespace ToyotaHylux
         // Constructor que recibe 4 vectores 4 para definir la matriz
         public ToyotaHylux(UnityEngine.Vector4 M0, UnityEngine.Vector4 M1, UnityEngine.Vector4 M2, UnityEngine.Vector4 M3)
         {
-            m00 = col0.x;
-            m01 = col1.x;
-            m02 = col2.x;
-            m03 = col3.x;
-            m10 = col0.y;
-            m11 = col1.y;
-            m12 = col2.y;
-            m13 = col3.y;
-            m20 = col0.z;
-            m21 = col1.z;
-            m22 = col2.z;
-            m23 = col3.z;
-            m30 = col0.w;
-            m31 = col1.w;
-            m32 = col2.w;
-            m33 = col3.w;
+            m00 = M0.x;
+            m01 = M1.x;
+            m02 = M2.x;
+            m03 = M3.x;
+            m10 = M0.y;
+            m11 = M1.y;
+            m12 = M2.y;
+            m13 = M3.y;
+            m20 = M0.z;
+            m21 = M1.z;
+            m22 = M2.z;
+            m23 = M3.z;
+            m30 = M0.w;
+            m31 = M1.w;
+            m32 = M2.w;
+            m33 = M3.w;
         }
 
         public float this[int row, int col]
@@ -390,7 +390,7 @@ namespace ToyotaHylux
             double num2 = q.y * 2f; // se multiplica por 2 a los componentes iamginarios del quaternion por la cantidad de diemnciones en la que se trabaja
             double num3 = q.z * 2f;
 
-            // Se descompone el quaternion para guardar los valores dentro de la matriz
+            // Se descompone el quaternion para guardar los valores dentro de la matriz como euler
             double num4 = q.x * num1;
             double num5 = q.y * num2;
             double num6 = q.z * num3;
@@ -457,6 +457,7 @@ namespace ToyotaHylux
         }
         
         // Esta funcion chequea que la matriz sea una matriz TRS valida 
+        // Si la posiciones 
         public bool ValidTRS()
         {
             // cheque que la diagonal o la escala no sea Cero
@@ -468,6 +469,9 @@ namespace ToyotaHylux
                      m03 == double.NaN && m13 == double.NaN && m23 == double.NaN && m33 == double.NaN)
                 return false; // Chequea que las rotaciones estan dentro de los parametros para que luego se puedan leer
             else if (GetRotation().x > 1 && GetRotation().x < -1 && GetRotation().y > 1 && GetRotation().y < -1 && GetRotation().z > 1 && GetRotation().z < -1 && GetRotation().w > 1 && GetRotation().w < -1)
+                return false;
+            // Chequea que el identity de una matriz TRS sea correcta, de lo contrario no estariamos hablando de una matriz TRS
+            else if (m30 != 0 || m31 != 0 || m32 != 0 || m33 != 1)
                 return false;
             else
                 return true;
