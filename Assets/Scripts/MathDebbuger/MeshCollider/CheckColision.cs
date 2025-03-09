@@ -1,11 +1,6 @@
-using CustomMath;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Numerics;
-using Unity.VisualScripting;
+using CustomMath;
 using UnityEngine;
 
 public class CheckColision : MonoBehaviour

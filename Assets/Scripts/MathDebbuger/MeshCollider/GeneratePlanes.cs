@@ -2,6 +2,7 @@ using CustomMath;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class GeneratePlanes : MonoBehaviour
@@ -73,6 +74,7 @@ public class GeneratePlanes : MonoBehaviour
 
     public void DrawPlane(Vec3 position, Vec3 normal, Color color)
     {
+        
         Vector3 v3;
         if (normal.normalized != Vector3.forward)
             v3 = Vector3.Cross(normal, Vector3.forward).normalized * normal.magnitude;

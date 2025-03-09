@@ -204,6 +204,8 @@ namespace ToyotaHylux
 
         public Vec3 lossyScale
         {
+            // obtiene la escala de la digonal de la matriz con todas las modificaciones aplicadas
+            // y luego se calcula la magnitud de estos vectores que nos da la cantidad de escala aplicada a estos ejes
             get
             {
                 return new Vec3(GetColumn(0).magnitude, GetColumn(1).magnitude, GetColumn(2).magnitude);
@@ -212,6 +214,7 @@ namespace ToyotaHylux
 
         public static ToyotaHylux Transpose(ToyotaHylux m)
         {
+            // devuelve la matriz con las filas y columnas trasnpuestas
             return new ToyotaHylux()
             {
                 m01 = m.m10,
@@ -227,17 +230,20 @@ namespace ToyotaHylux
                 m31 = m.m13,
                 m32 = m.m23,
             };
+            // nota : hacerlo de esta manera es mas eficiente
         }
 
         // invierte una matriz 4x4 sobre su diagonal y eso solo se puede hace si su determinate es valida
         public static ToyotaHylux Inverse(ToyotaHylux m)
         {
+            // determina si la matriz es reversible en base al resultado de la determinate
             float detA = Determinant(m);
             if (detA == 0)
                 return zero;
 
             ToyotaHylux aux = new ToyotaHylux()
             {
+                // calcula los cofactores de la matriz m
                 m00 = m.m11 * m.m22 * m.m33 + m.m12 * m.m23 * m.m31 + m.m13 * m.m21 * m.m32 - m.m11 * m.m23 * m.m32 - m.m12 * m.m21 * m.m33 - m.m13 * m.m22 * m.m31,
                 m01 = m.m01 * m.m23 * m.m32 + m.m02 * m.m21 * m.m33 + m.m03 * m.m22 * m.m31 - m.m01 * m.m22 * m.m33 - m.m02 * m.m23 * m.m31 - m.m03 * m.m21 * m.m32,
                 m02 = m.m01 * m.m12 * m.m33 + m.m02 * m.m13 * m.m32 + m.m03 * m.m11 * m.m32 - m.m01 * m.m13 * m.m32 - m.m02 * m.m11 * m.m33 - m.m03 * m.m12 * m.m31,
@@ -258,6 +264,8 @@ namespace ToyotaHylux
                 m32 = m.m00 * m.m12 * m.m31 + m.m01 * m.m10 * m.m32 + m.m02 * m.m11 * m.m30 - m.m00 * m.m11 * m.m32 - m.m01 * m.m12 * m.m30 - m.m02 * m.m10 * m.m31,
                 m33 = m.m00 * m.m11 * m.m22 + m.m01 * m.m12 * m.m20 + m.m02 * m.m10 * m.m21 - m.m00 * m.m12 * m.m21 - m.m01 * m.m10 * m.m22 - m.m02 * m.m11 * m.m20
             };
+            
+            // luego de los cofactores, se debe transponer los valores de la matriz
 
             ToyotaHylux ret = new ToyotaHylux()
             {
@@ -277,6 +285,9 @@ namespace ToyotaHylux
                 m31 = aux.m31 / detA,
                 m32 = aux.m32 / detA,
                 m33 = aux.m33 / detA
+                
+                // finalmente cada elemeto de la matriz se tiene que dividir por la determinante de la matriz original
+                // y con eso se termina la fromula de reversivilidad de las matrices
 
             };
             return ret;
@@ -323,16 +334,24 @@ namespace ToyotaHylux
             ToyotaHylux m = this;
             VandalQuaternion q = new VandalQuaternion();
 
-            // vuelve a componen el quaternion que anteriormente fue desmantelado para ser almacenado
+            // se obtienen los datos del quaternion en base a la digonal de la matriz
+            // nota : el 1 es para asegurarse de que el valor sea positivo y se utiliza MAX para evitar numeros complejos
+            // y se divide en 2 para normalizarlo
             q.w = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2; // Se calcula W que es la parte real del quaternion
+            // en cada ecuacion se refueza un valor epecifico que es el que queremos obtener y el resto se resta
             q.x = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2; // Se calcula el componente real de X
             q.y = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2; // Se calcula el componente real de Y
             q.z = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2; // Se calcula el componente real de Z
+            
+            // la diferencia entre los elementos fuera de la digonal determinan la direccion de la rotacion
+            // y ademas de ajustar los signos, Mathf.Sing asegura que tengan la orientacion correcta 
             q.x *= Mathf.Sign(q.x * (m[2, 1] - m[1, 2])); // Se lo multiplica por el componente complejo(i) para formal el valor complejo de X
             q.y *= Mathf.Sign(q.y * (m[0, 2] - m[2, 0])); // Se lo multiplica por el componente complejo(j) para formal el valor complejo de Y
             q.z *= Mathf.Sign(q.z * (m[1, 0] - m[0, 1])); // Se lo multiplica por el componente complejo(k) para formal el valor complejo de Z
 
             return q;
+            
+            // nota : la formula aplicada es la formula de conversion de Shoemake
         }
         public Vec3 GetPosition()
         {
@@ -358,6 +377,13 @@ namespace ToyotaHylux
                 m[0, 2] * m[1, 1] * m[2, 0] * m[3, 3] + m[0, 1] * m[1, 2] * m[2, 0] * m[3, 3] +
                 m[0, 2] * m[1, 0] * m[2, 1] * m[3, 3] - m[0, 0] * m[1, 2] * m[2, 1] * m[3, 3] -
                 m[0, 1] * m[1, 0] * m[2, 2] * m[3, 3] + m[0, 0] * m[1, 1] * m[2, 2] * m[3, 3];
+            
+            //al multiplicar la matriz en esta secuencia queda reflejada la "expancion"
+            
+            // nota : este metodo es el calculo de la determinante por Cofactores
+            // La expansión por cofactores toma una fila o una columna de la matriz y
+            // la "expande" en una suma de productos de los elementos de esa fila o columna y
+            // sus determinantes correspondientes de matrices más pequeñas
         }
 
         // Almacena la escala de un objeto dentro de la diagonal de una matriz
@@ -390,16 +416,21 @@ namespace ToyotaHylux
             double num2 = q.y * 2f; // se multiplica por 2 a los componentes iamginarios del quaternion por la cantidad de diemnciones en la que se trabaja
             double num3 = q.z * 2f;
 
-            // Se descompone el quaternion para guardar los valores dentro de la matriz como euler
+            // se calcula los temino que aparecen en la diagon de la matriz
             double num4 = q.x * num1;
             double num5 = q.y * num2;
             double num6 = q.z * num3;
+            
+            // se calculan los terminos de manera curzada que aparecen fuera de la matriz
             double num7 = q.x * num2;
             double num8 = q.x * num3;
             double num9 = q.y * num3;
+            
+            // se calculan los terminos que dependen de w que afectan la orientacion de la rotacion
             double num10 = q.w * num1;
             double num11 = q.w * num2;
             double num12 = q.w * num3;
+            
             ToyotaHylux m;
 
             // El 1- es porque las posciones de correspondientes pertenece a la diagonal, que a su vez pertenecen a la escala y son inicializadas en 1.
@@ -449,6 +480,12 @@ namespace ToyotaHylux
         public static ToyotaHylux TRS(Vec3 pos, VandalQuaternion q, Vec3 s)
         { 
             return (Translate(pos) * Rotate(q) * Scale(s));
+            
+            // primero se escala el objeto, ya que de otra forma al escalarlo despues podri terminar en otra posicion
+            
+            // segundo rotacion, ya que la rotacion ocurre siempre entorno al origen, pera evitar movimientos inesperados
+            
+            // y por ultimo traslacion una vez ya esta el objeto escalado y rotado
 
         }
         public void SetTRS(Vec3 pos, VandalQuaternion q, Vec3 s)
@@ -463,18 +500,25 @@ namespace ToyotaHylux
             // cheque que la diagonal o la escala no sea Cero
             if (lossyScale == Vec3.Zero)
                 return false;
-            else if (m00 == double.NaN && m10 == double.NaN && m20 == double.NaN && m30 == double.NaN &&
-                     m01 == double.NaN && m11 == double.NaN && m21 == double.NaN && m31 == double.NaN && // Cheque que sus componentesd sean numeros
-                     m02 == double.NaN && m12 == double.NaN && m22 == double.NaN && m32 == double.NaN &&
-                     m03 == double.NaN && m13 == double.NaN && m23 == double.NaN && m33 == double.NaN)
-                return false; // Chequea que las rotaciones estan dentro de los parametros para que luego se puedan leer
-            else if (GetRotation().x > 1 && GetRotation().x < -1 && GetRotation().y > 1 && GetRotation().y < -1 && GetRotation().z > 1 && GetRotation().z < -1 && GetRotation().w > 1 && GetRotation().w < -1)
+            
+            if (m00 == double.NaN && m10 == double.NaN && m20 == double.NaN && m30 == double.NaN &&
+                m01 == double.NaN && m11 == double.NaN && m21 == double.NaN && m31 == double.NaN && // Cheque que sus componentesd sean numeros
+                m02 == double.NaN && m12 == double.NaN && m22 == double.NaN && m32 == double.NaN &&
+                m03 == double.NaN && m13 == double.NaN && m23 == double.NaN && m33 == double.NaN)
                 return false;
-            // Chequea que el identity de una matriz TRS sea correcta, de lo contrario no estariamos hablando de una matriz TRS
-            else if (m30 != 0 || m31 != 0 || m32 != 0 || m33 != 1)
+            
+            // Chequea que la rotacion sea valida
+            if (Mathf.Abs(GetRotation().x) > 1 || 
+                Mathf.Abs(GetRotation().y) > 1 || 
+                Mathf.Abs(GetRotation().z) > 1 || 
+                Mathf.Abs(GetRotation().w) > 1)
                 return false;
-            else
-                return true;
+            
+            // Chequea que la traslacion sea valida
+            if (m30 != 0 || m31 != 0 || m32 != 0 || m33 != 1)
+                return false;
+            
+            return true;
         }
         public Vec3 MultiplyVector(Vec3 v) 
         {
@@ -521,7 +565,7 @@ namespace ToyotaHylux
         }
         
         // Porque multiplicarias 2 matrices TRS? 
-        // Porque de esta forma podemos lograr que un (a) sea dependiente de la otra (b)
+        // Porque de esta forma podemos lograr que una (a) sea dependiente de la otra (b)
         // Esto da a lugar a que un objeto rote porque mas que su rotacion sea 0
         // Ya que la rotacion del padre(b) estaria afectando al hijo(a)
         public static ToyotaHylux operator *(ToyotaHylux a, ToyotaHylux b)
