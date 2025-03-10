@@ -56,7 +56,8 @@ public struct Llano
         this.b = b;
         this.c = c;
         
-        // nota : se puede cambiar la direccion del plano si cambias el orden en el que pasas los vectores
+        // nota : se puede cambiar la direccion de la normal del plano si cambias el orden en el que pasas los vectores
+        // nota : solo puede existir un plano que pase por estos 3 puntos a la vez
     }
 
     public void SetNormalAndPosition(Vec3 inNormal, Vec3 inPoint)

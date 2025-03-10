@@ -46,6 +46,7 @@ namespace BridgeLeg
             this.w = q.w;
         }
 
+        // w = igual a 1 ya que mantiene la magnitud en 1 para que sea valido para rotaciones
         private static readonly VandalQuaternion identityQuaternion = new VandalQuaternion(0f, 0f, 0f, 1f);
 
         #endregion
@@ -621,6 +622,10 @@ namespace BridgeLeg
                 lhs.w * rhs.y + lhs.y * rhs.w + lhs.z * rhs.x - lhs.x * rhs.z,
                 lhs.w * rhs.z + lhs.z * rhs.w + lhs.x * rhs.y - lhs.y * rhs.x,
                 lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z);
+            
+            // al aplicar la distributiba en todos sus componentes, su producto es la rotacion acumulada de ambos
+            
+            // Nota : las multiplicaciones de quaterniones no son conmutativas
         }
 
         // Rota un punto con un cuaternion 

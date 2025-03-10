@@ -269,6 +269,8 @@ namespace ToyotaHylux
 
             ToyotaHylux ret = new ToyotaHylux()
             {
+                // normaliza la diagonal para evitar perdida de informacion
+                
                 m00 = aux.m00 / detA,
                 m01 = aux.m01 / detA,
                 m02 = aux.m02 / detA,

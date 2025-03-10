@@ -93,11 +93,17 @@ namespace CustomMath
         #region Operators
         public static bool operator ==(Vec3 left, Vec3 right)
         {
+            // los float tiene un error de punto flotante
+            // lo que comprarlos puede llevar a la impresicion
+            
             float diff_x = left.x - right.x;
             float diff_y = left.y - right.y;
             float diff_z = left.z - right.z;
+            // para solucionarlo se consigue la diferencia entre los vectores
+            // de esa diferencia se obtiene la mangitud al cuadrado y se compara con el cuadrado de epsiolon
             float sqrmag = diff_x * diff_x + diff_y * diff_y + diff_z * diff_z;
             return sqrmag < epsilon * epsilon;
+            // si la diferencia es menor a epsilon, significa que son iguals
         }
 
         public static bool operator !=(Vec3 left, Vec3 right)
@@ -244,7 +250,7 @@ namespace CustomMath
         //(La interpolación lineal es un método para encontrar un valor intermedio entre dos puntos mediante una línea recta que los une).
         public static Vec3 Lerp(Vec3 a, Vec3 b, float t)
         {
-            // podriamos interpertar como a = el punto de inicio, b = el destino y t = el tiempo transcurrido
+            // podriamos interpertar como a = el punto de inicio, b = el destino y t = porcetanje avanzado
             
             // Clampea t entre 0 y 1 para que el resultado no exeda del vector target (b)
             t = Mathf.Clamp(t, 0, 1);
@@ -332,8 +338,12 @@ namespace CustomMath
         }
 
         //La proyección de un vector sobre otro vector da como resultado la magnitud del primer vector en la dirección del segundo vector.
+        // la proyeccion es la representacion
         public static Vec3 Project(Vec3 vector, Vec3 onNormal) 
         {
+            // base canonica : son los vectores cartecianos unitarios en un eje
+            // 
+            
             // esto calcula el cuadrado de la magnitud, se hace con el producto punto porque es mas eficeinte
             float sqrMag = Dot(onNormal, onNormal);
             

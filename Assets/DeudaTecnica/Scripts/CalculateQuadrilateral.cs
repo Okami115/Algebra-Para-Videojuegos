@@ -288,9 +288,6 @@ public class CalculateQuadrilateral : MonoBehaviour
     
     private void OnDrawGizmos()
     {
-        if (true)
-            return;
-        
         if (quadrilaterals.Count > 0)
         {
             Gizmos.color = Color.red;
